@@ -1,138 +1,139 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
+const { Console } = require('console');
+const { Transform } = require('stream')
+
 
 // create  connection
 const con = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: '17250967',
-  database: 'humanResources_db'
+  database: 'humanResources_db' 
 });
 
-con.promise()
-  .query('SELECT * FROM employee')
-  .then(([rows, fields]) => {
-    // Store the employee data
-    const employees = rows;
-
-    // Questions
-    inquirer
-      .prompt([
-        {
-          type: 'list',
-          message: 'What do you like to do?',
-          name: 'todo',
-          choices: [
-            'View All Employees',
-            'Add Employee',
-            'Update Employee Role',
-            'View All Role',
-            'View All Departments',
-            'Add Department',
-            'Exit'
-          ],
-          validate: function (answer) {
-            if (answer.length === 0) {
-              return console.log('Select one!');
-            }
-            return true;
-          }
-        }
-      ])
-      .then((response) => {
-        if (response.todo === 'View All Employees') {
-          inquirer
-            .prompt([
-              {
-                type: 'list',
-                message: 'Employees',
-                name: 'todo',
-                choices: employees.map((employee) => employee.first_name),
-                validate: function (answer) {
-                  if (answer.length === 0) {
-                    return console.log('Select one!');
-                  }
-                  return true;
-                }
-              }
-            ])
-            .then((answer) => {
-              console.log(answer, 'newEmployee');
-            })
-            .catch((error) => {
-              if (error) throw error;
-              console.log('added employee');
-            });
-        }
-      });
-  })
-  .catch(console.log)
-  .finally(() => con.end());
+function table(input) {
+  // @see https://stackoverflow.com/a/67859384
+  const ts = new Transform({ transform(chunk, enc, cb) { cb(null, chunk) } })
+  const logger = new Console({ stdout: ts })
+  logger.table(input)
+  const table = (ts.read() || '').toString()
+  let result = '';
+  for (let row of table.split(/[\r\n]+/)) {
+    let r = row.replace(/[^┬]*┬/, '┌');
+    r = r.replace(/^├─*┼/, '├');
+    r = r.replace(/│[^│]*/, '');
+    r = r.replace(/^└─*┴/, '└');
+    r = r.replace(/'/g, ' ');
+    result += `${r}\n`;
+  }
+  console.log(result);
+}
 
 
 
+    // Initial prompt 
+  initialPrompt()
 
-  //     else if (response === "Add Employee") {
-  //       inquirer
-  //         .prompt([
-  //           {
-  //             type: 'input',
-  //             message: 'What is the first name of the employee?',
-  //             name: 'firstName',
-  //             validate: function (answer) {
-  //               if (answer.length < 2) {
-  //                 return console.log("The name must has at least 3 characters");
-  //               }
-  //               return true;
-  //             }
-  //           },
-  //           {
-  //             type: 'input',
-  //             message: 'What is the last name of the employee?',
-  //             name: 'lastName',
-  //             validate: function (answer) {
-  //               if (answer.length < 2) {
-  //                 return console.log("The name must has at least 3 characters");
-  //               }
-  //               return true;
-  //             }
-  //           },
-  //           {
-  //             type: 'list',
-  //             message: 'What is the role of the employee?',
-  //             name: 'role',
-  //             choices: [], // take values from the table role. Call from a let on the top
-  //             validate: function (answer) {
-  //               if (answer.length === 0) {
-  //                 return console.log("Select one!");
-  //               }
-  //               return true;
-  //             },
-  //           },
-  //           {
-  //             type: 'list',
-  //             message: 'Who is thee employee`s manager? If does not have any, press enter ',
-  //             name: 'manager',
-  //             choices: [], // take values from the table role
-  //           }
-  //         ])
-  //         .then((answer) => {
-  //           console.log(answer, "newEmployee");
-  //           function querying() {
-  //           dbConnection.query("INSERT INTO employee SET ?", {
-  //             first_name: answer.firstName,
-  //             last_name: answer.lastName,
-  //             role_id: answer.role,
-  //             manager_id: answer.manager
-  //           }, function (error) {
-  //             if (error) throw error;
-  //             console.log("added employee");
-  //           }) }    
-  //           querying()
-  //         })
-  //     }
-  //   }
-  // })
+    function initialPrompt() {
+      inquirer.prompt([
+      {
+      type: "list",
+      message: "What would you like to do?",
+      name: "choice",
+      choices: [
+                "View All Employees", 
+                "View All Departments",
+                "View All Roles",
+                "Add a Department?",
+                "Add a Role",
+                "Add an Employee",
+                "Update an Employee's Role"   
+              ]
+      }
+  ]).then(function(answer) {
+    // switch (answer.choice) {
+    //   case "View All Employees":
+    //     viewEmployees();
+    //     break;
+    //   case "View All Departments":
+    //     viewDepartments();
+    //     break;
+    //   case "View All Roles":
+    //     viewRoles();
+    //     break;
+    //   case "Add a Department":
+    //     addDepartment();
+    //     break;
+    //   case "Add a Role":
+    //     addRole();
+    //     break;
+    //   case "Add an Employee":
+    //     addEmployee();
+    //     break;
+    //   case "Update an Employee's Role":
+    //     updateEmployeeRole();
+    //     break;
+    //   default:
+    //     console.log("Invalid choice");
+    // }
+    if (answer.choice === "View All Employees") {
+      viewEmployees();
+    } else if (answer.choice === "View All Departments") {
+      viewDepartments();
+    } else if (answer.choice === "View All Roles") {
+      viewRoles();
+    } else if (answer.choice === "Add a Department") {
+      addDepartment();
+    } else if (answer.choice === "Add a Role") {
+      addRole();
+    } else if (answer.choice === "Add an Employee") {
+      addEmployee();
+    } else if (answer.choice === "Update an Employee's Role") {
+      updateEmployeeRole();
+    } else {
+      console.log("Invalid choice");
+    }
+      })
+  }
+
+/// View employees
+
+function viewEmployees() {
+  console.clear()
+  con.query("SELECT * from employee;", 
+  function(err, res) {
+    if (err) throw err
+    table(res)
+    initialPrompt()
+})
+}
+
+/// View departments
+
+function viewDepartments() {
+  console.clear()
+  con.query("SELECT * from department;", 
+  function(err, res) {
+    if (err) throw err
+    table(res)
+    initialPrompt()
+})
+
+}
+
+
+/// View employees
+
+function viewRoles() {
+  console.clear()
+  con.query("SELECT * from role_t;", 
+  function(err, res) {
+    if (err) throw err
+    table(res)
+    initialPrompt()
+})
+}
 
 
 

@@ -69,10 +69,13 @@ function table(input) {
                 "View All Employees", 
                 "View All Departments",
                 "View All Roles",
+                "View employees by manager",
+                "View employees by department",
                 "Add a Department",
                 "Add a Role",
                 "Add an Employee",
-                "Update an Employee's Role"   
+                "Update an Employee's Role", 
+                "Update employee`s Manager"
               ],
     validate: function (answer) {
                 if (answer.length === 0) {
@@ -89,10 +92,15 @@ function table(input) {
       "View All Employees": () => viewEmployees(),
       "View All Departments": () => viewDepartments(),
       "View All Roles": () => viewRoles(),
+      "View employees by manager": () => viewManagers(),
+      // "View employees by department": () => viewEmployDepart(),
+      // Delete departments, roles, and employees
+      // View the total utilized budget of a department—in other words, the combined salaries of all employees in that department.
       "Add a Department": () => addDepartment(),
       "Add a Role": () => addRole(),
       "Add an Employee": () => addEmployee(),
-      "Update an Employee's Role": () => updateEmployeeRole()
+      "Update an Employee's Role": () => updateEmployeeRole(),
+      "Update employee`s Manager": () => updateEmployeeManager()
     }
   
     const fn = lookupChoice[answer.choice]
@@ -173,6 +181,26 @@ function viewRoles() {
     initialPrompt()
 })
 }
+
+
+/// View employees by manager
+
+function viewManagers() {
+  console.clear()
+  principalLogo()
+  con.query("SELECT DISTINCT employee.*, role_t.* FROM employee JOIN role_t ON employee.role_id = role_t.id_role;", 
+  function(err, res) {
+    if (err) throw err
+    console.log (`
+    ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗  ╔═╗╔╗╔╔╦╗  ╔╦╗╔═╗╔╗╔╔═╗╔═╗╔═╗╦═╗╔═╗
+    ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗  ╠═╣║║║ ║║  ║║║╠═╣║║║╠═╣║ ╦║╣ ╠╦╝╚═╗
+    ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝  ╩ ╩╝╚╝═╩╝  ╩ ╩╩ ╩╝╚╝╩ ╩╚═╝╚═╝╩╚═╚═╝
+`)
+    table(res)
+    initialPrompt()
+})
+}
+
 
 /// Add DEPARTMENT
 
@@ -265,7 +293,7 @@ function(err, res1) {
   },
   
 ]).then(function(answer) {
-  con.query(`INSERT INTO role_t (title, salary, department_id) VALUES ("${answer.newRole}", ${answer.newSalary},${answer.deptRole});`, 
+  con.query(`INSERT INTO role_t (title, salary, dept_id) VALUES ("${answer.newRole}", ${answer.newSalary},${answer.deptRole});`, 
   function(err, res) {
     if (err) throw err
     initialPrompt()
@@ -295,7 +323,7 @@ function(err, res1) {
   inquirer.prompt([
   {
     type: 'input',
-    message: 'What is the new employee`s first name?',
+    message: 'What is the employee`s first name?',
     name: 'newFirstName',
     validate: function (answer) {
       if (answer.length === 0) {
@@ -306,7 +334,7 @@ function(err, res1) {
   },
   {
     type: 'input',
-    message: 'What is the new employee`s last name?',
+    message: 'What is the employee`s last name?',
     name: 'newLastName',
     validate: function (answer) {
       if (answer.length === 0) {
@@ -317,22 +345,114 @@ function(err, res1) {
   },
   {
     type: 'list',
-    message: 'What is the new employee`s role?',
+    message: 'What is the employee`s role?',
     name: 'role',
     choices: nameDep,
   },
   {
     type: 'numeric',
-    message: 'What is the new employee`s manager ID? If you do not know the manager ID, press 1',
+    message: 'What is the employee`s manager ID? If you do not know the manager ID, type null',
     name: 'manager',
   },
 ]).then(function(answer) {
-  con.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${answer.newFirstName}","${answer.newLastName}",${answer.role}, ${answer.manager});`, 
+  con.query(`INSERT INTO employee (f_name, l_name, role_id, man_id) VALUES ("${answer.newFirstName}","${answer.newLastName}",${answer.role}, ${answer.manager});`, 
   function(err, res) {
     if (err) throw err
     initialPrompt()
 }) })
 })}
+
+
+/// Update employee
+
+function updateEmployeeRole() {
+  console.clear()
+  principalLogo()
+  con.query("SELECT DISTINCT employee.*, role_t.* FROM employee JOIN role_t ON employee.role_id = role_t.id_role;", 
+function(err, res1) {
+  if (err) throw err
+  const roles = [...new Set(res1.map(x => x.id_role))];
+  const employees = [...new Set(res1.map(x => x.id_emp))]
+  console.log(`
+
+                                          ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗
+                                          ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗
+                                          ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝
+                                          
+                                        `)
+  table(res1)
+ 
+  inquirer.prompt([
+    {
+      type: 'list',
+      message: 'Select an employee ID to update their role?',
+      name: 'employeeID',
+      choices: employees,
+    },
+  {
+    type: 'list',
+    message: 'What is the new employee`s role?',
+    name: 'roleId',
+    choices: roles,
+  },
+]).then(function(answer) {
+  con.query(`UPDATE employee SET role_id = ${answer.roleId} where id_emp = ${answer.employeeID}; `, 
+  function(err, res) {
+    if (err) throw err
+    initialPrompt()
+}) })
+})}
+
+
+/// Update employee`s manager
+
+function updateEmployeeManager() {
+  console.clear()
+  principalLogo()
+  con.query("SELECT manager.id_man, manager.f_name AS manager_first_name, manager.l_name AS manager_last_name, employee.id_emp, employee.f_name AS employee_first_name, employee.l_name AS employee_last_name, employee.man_id FROM manager LEFT JOIN employee ON employee.man_id = manager.id_man ORDER BY manager.id_man ASC;", 
+function(err, res2) {
+  
+  if (err) throw err
+  const manager = [...new Set(res2.map(x => x.id_man))];
+  const employees = [];
+for (let i = 0; i < res2.length; i++) {
+  const id_emp = res2[i].id_emp;
+  if (id_emp !== null) {
+    employees.push(id_emp);
+  }
+}
+
+
+  console.log(`
+
+              ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗  ╔═╗╔╗╔╔╦╗  ╔╦╗╔═╗╔╗╔╔═╗╔═╗╔═╗╦═╗╔═╗
+              ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗  ╠═╣║║║ ║║  ║║║╠═╣║║║╠═╣║ ╦║╣ ╠╦╝╚═╗
+              ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝  ╩ ╩╝╚╝═╩╝  ╩ ╩╩ ╩╝╚╝╩ ╩╚═╝╚═╝╩╚═╚═╝
+                                          
+                                        `)
+  table(res2)
+ 
+  inquirer.prompt([
+    {
+      type: 'list',
+      message: 'Select an employee ID to update their manager?',
+      name: 'employeeID',
+      choices: employees,
+    },
+  {
+    type: 'list',
+    message: 'What is the new employee`s manager?',
+    name: 'managerId',
+    choices: manager,
+  },
+]).then(function(answer) {
+  con.query(`UPDATE employee SET man_id = ${answer.managerId} where id_emp = ${answer.employeeID}; `, 
+  function(err, res) {
+    if (err) throw err
+    initialPrompt()
+}) })
+})}
+
 
 
 // function addDepartment() {
@@ -357,7 +477,7 @@ function(err, res1) {
 //     table(res)
 //     initialPrompt()
 // })
-// })}
+// })}  
 
 
 

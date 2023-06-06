@@ -127,6 +127,7 @@ function table(input) {
     //   console.log("Invalid choice");
     // }
       })
+  
   }
 
 /// View employees
@@ -142,6 +143,13 @@ function viewEmployees() {
   con.query('SELECT id_emp AS ID_Emp, first_name AS First_Name, last_name AS Last_Name, role_id AS Role, man_id AS Manager_ID from employee;', 
   function(err, res) {
     if (err) throw err
+    console.clear()
+    principalLogo()
+    console.log(`
+              ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗
+              ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗
+              ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝
+  `)
     table(res)
     initialPrompt()
 })
@@ -160,6 +168,13 @@ function viewDepartments() {
   con.query("SELECT id_dep AS 'ID Department', name_dep AS 'Department' from department;", 
   function(err, res) {
     if (err) throw err
+    console.clear()
+    principalLogo()
+     console.log(`
+╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗╔═╗
+ ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ ╚═╗
+═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ ╚═╝
+  `)
     table(res)
     initialPrompt()
 })
@@ -180,6 +195,13 @@ function viewRoles() {
   con.query("SELECT id_role AS 'ID Role', title AS 'Title', salary AS 'Annual Salary', dept_id AS 'Department ID' FROM role_t;", 
   function(err, res) {
     if (err) throw err
+    console.clear()
+    principalLogo()
+    console.log (`
+                  ╦═╗╔═╗╦  ╔═╗╔═╗
+                  ╠╦╝║ ║║  ║╣ ╚═╗
+                  ╩╚═╚═╝╩═╝╚═╝╚═╝
+`)
     table(res)
     initialPrompt()
 })
@@ -194,6 +216,13 @@ function viewEmployDepart() {
   con.query("SELECT e.id_emp AS 'ID Emp', e.first_name AS 'First Name - Emp', e.last_name AS 'Last Name - Emp', r.dept_id AS 'ID Dep' , name_dep AS 'Department' FROM employee AS e JOIN role_t AS r ON e.role_id = r.id_role JOIN department AS d ON r.dept_id = id_dep;", 
   function(err, res) {
     if (err) throw err
+    console.log (`
+      ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗  ╔╗ ╦ ╦  ╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗
+      ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗  ╠╩╗╚╦╝   ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ 
+      ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝  ╚═╝ ╩   ═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ 
+`)
+    console.clear()
+    principalLogo()
     console.log (`
       ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗  ╔╗ ╦ ╦  ╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗
       ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗  ╠╩╗╚╦╝   ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ 
@@ -218,6 +247,13 @@ function viewManagers() {
     ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗  ╠═╣║║║ ║║  ║║║╠═╣║║║╠═╣║ ╦║╣ ╠╦╝╚═╗
     ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝  ╩ ╩╝╚╝═╩╝  ╩ ╩╩ ╩╝╚╝╩ ╩╚═╝╚═╝╩╚═╚═╝
 `)
+    console.clear()
+    principalLogo()
+    console.log (`
+    ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗  ╔═╗╔╗╔╔╦╗  ╔╦╗╔═╗╔╗╔╔═╗╔═╗╔═╗╦═╗╔═╗
+    ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗  ╠═╣║║║ ║║  ║║║╠═╣║║║╠═╣║ ╦║╣ ╠╦╝╚═╗
+    ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝  ╩ ╩╝╚╝═╩╝  ╩ ╩╩ ╩╝╚╝╩ ╩╚═╝╚═╝╩╚═╚═╝
+`)
     table(res)
     initialPrompt()
 })
@@ -236,6 +272,13 @@ function viewAnnualBudget() {
     ╠═╣║║║║║║║ ║╠═╣║    ╠╩╗║ ║ ║║║ ╦║╣  ║   ╠╩╗╚╦╝   ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ 
     ╩ ╩╝╚╝╝╚╝╚═╝╩ ╩╩═╝  ╚═╝╚═╝═╩╝╚═╝╚═╝ ╩   ╚═╝ ╩   ═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ 
 `)
+  console.clear()
+  principalLogo()
+  console.log (`
+    ╔═╗╔╗╔╔╗╔╦ ╦╔═╗╦    ╔╗ ╦ ╦╔╦╗╔═╗╔═╗╔╦╗  ╔╗ ╦ ╦  ╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗
+    ╠═╣║║║║║║║ ║╠═╣║    ╠╩╗║ ║ ║║║ ╦║╣  ║   ╠╩╗╚╦╝   ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ 
+    ╩ ╩╝╚╝╝╚╝╚═╝╩ ╩╩═╝  ╚═╝╚═╝═╩╝╚═╝╚═╝ ╩   ╚═╝ ╩   ═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ 
+    `)
     table(res)
     initialPrompt()
 })
@@ -431,7 +474,7 @@ function updateEmployeeRole() {
 function(err, res) {
   if (err) throw err
 
-
+// SET id role
   const roles = [];
   for (let i = 0; i < res.length; i++) {
     const roleId = res[i].Role_ID;
@@ -446,7 +489,7 @@ function(err, res) {
 
 
 
-
+// SET id employee
   const employees = [];
   for (let i = 0; i < res.length; i++) {
     const id_emp = res[i].ID_Emp;

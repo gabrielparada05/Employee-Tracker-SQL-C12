@@ -530,15 +530,13 @@ function deleteElements() {
       
     }
 ]).then(function(answer) {
-  handleDelete()
-  function handleDelete() {
-    if ("Delete a Department") {
+    if (answer.choice === "Delete a Department") {
       deleteDepartment()
-    } else if ("Delete a role") {
+    } else if (answer.choice === "Delete a role") {
       deleteRole()
-    } else if ("Delete an employee") {
+    } else if (answer.choice === "Delete an employee") {
       deleteEmployee()
-    } 
+  
   }
 })
 }
@@ -601,7 +599,7 @@ function deleteRole() {
       choices: roleId,
     },
   ]) .then(function(answer) {
-      con.query(`DELETE FROM department WHERE id_dep = ${answer.deleteRole};`, 
+      con.query(`DELETE FROM role_t WHERE id_role = ${answer.deleteRole};`, 
       function(err, res) {
         if (err) throw err
         viewRoles()
@@ -614,7 +612,7 @@ function deleteRole() {
 
 
 /// delete Employee
-function deleteRole() {
+function deleteEmployee() {
   console.clear()
   principalLogo()
   console.log(`
@@ -636,7 +634,7 @@ function deleteRole() {
       choices: employeeID,
     },
   ]) .then(function(answer) {
-      con.query(`DELETE FROM department WHERE id_dep = ${answer.deleteEmp};`, 
+      con.query(`DELETE FROM employee WHERE id_emp = ${answer.deleteEmp};`, 
       function(err, res) {
         if (err) throw err
         viewEmployees()

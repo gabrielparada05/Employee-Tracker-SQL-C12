@@ -3,13 +3,14 @@ const mysql = require('mysql2');
 const { Console } = require('console');
 const { Transform } = require('stream');
 const { map } = require('rxjs');
+require('dotenv').config();
 
 
 // create  connection
 const con = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '17250967',
+  password: process.env.password,
   database: 'humanResources_db' 
 });
 
@@ -61,6 +62,8 @@ function table(input) {
   initialPrompt()
 
     function initialPrompt() {
+
+      
       inquirer.prompt([
       {
       type: "list",

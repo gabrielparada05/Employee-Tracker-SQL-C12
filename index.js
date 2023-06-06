@@ -94,41 +94,57 @@ function table(input) {
       }
   ]).then(function(answer) {
 
-    const lookupChoice = {
-      "View All Employees": () => viewEmployees(),
-      "View All Departments": () => viewDepartments(),
-      "View All Roles": () => viewRoles(),
-      "View employees by manager": () => viewManagers(),
-      "View employees by department": () => viewEmployDepart(),
-      "View annual budget by department": () => viewAnnualBudget(),
-      "Add a Department": () => addDepartment(),
-      "Add a Role": () => addRole(),
-      "Add an Employee": () => addEmployee(),
-      "Update an Employee's Role": () => updateEmployeeRole(),
-      "Update employee`s Manager": () => updateEmployeeManager(),
-      "Delete departments, roles, and employees" : () => deleteElements()
-    }
-  
-    const fn = lookupChoice[answer.choice]
-    fn()
+    const userChoice = answer.choice;
 
-    // if (answer.choice === "View All Employees") {
-    //   viewEmployees();
-    // } else if (answer.choice === "View All Departments") {
-    //   viewDepartments();
-    // } else if (answer.choice === "View All Roles") {
-    //   viewRoles();
-    // } else if (answer.choice === "Add a Department") {
-    //   addDepartment();
-    // } else if (answer.choice === "Add a Role") {
-    //   addRole();
-    // } else if (answer.choice === "Add an Employee") {
-    //   addEmployee();
-    // } else if (answer.choice === "Update an Employee's Role") {
-    //   updateEmployeeRole();
-    // } else {
-    //   console.log("Invalid choice");
+    if (userChoice === "View All Employees") {
+      viewEmployees();
+    } else if (userChoice === "View All Departments") {
+      viewDepartments();
+    } else if (userChoice === "View All Roles") {
+      viewRoles();
+    } else if (userChoice === "View employees by manager") {
+      viewManagers();
+    } else if (userChoice === "View employees by department") {
+      viewEmployDepart();
+    } else if (userChoice === "View annual budget by department") {
+      viewAnnualBudget();
+    } else if (userChoice === "Add a Department") {
+      addDepartment();
+    } else if (userChoice === "Add a Role") {
+      addRole();
+    } else if (userChoice === "Add an Employee") {
+      addEmployee();
+    } else if (userChoice === "Update an Employee's Role") {
+      updateEmployeeRole();
+    } else if (userChoice === "Update employee`s Manager") {
+      updateEmployeeManager();
+    } else if (userChoice === "Delete departments, roles, and employees") {
+      deleteElements();
+    } else {
+      console.log("Invalid choice. Please try again.")
+    }
+    
+
+
+
+    // const lookupChoice = {
+    //   "View All Employees": () => viewEmployees(),
+    //   "View All Departments": () => viewDepartments(),
+    //   "View All Roles": () => viewRoles(),
+    //   "View employees by manager": () => viewManagers(),
+    //   "View employees by department": () => viewEmployDepart(),
+    //   "View annual budget by department": () => viewAnnualBudget(),
+    //   "Add a Department": () => addDepartment(),
+    //   "Add a Role": () => addRole(),
+    //   "Add an Employee": () => addEmployee(),
+    //   "Update an Employee's Role": () => updateEmployeeRole(),
+    //   "Update employee`s Manager": () => updateEmployeeManager(),
+    //   "Delete departments, roles, and employees" : () => deleteElements()
     // }
+  
+    // const fn = lookupChoice[answer.choice]
+    // fn()
+
       })
   
   }
@@ -267,7 +283,7 @@ function viewManagers() {
 function viewAnnualBudget() {
   console.clear()
   principalLogo()
-  con.query("SELECT SUM(role_t.salary) AS Annual_Budget_HR, FROM role_t JOIN department ON dept_id = id_dep group by name_dep;", 
+  con.query("SELECT name_dep AS Department, SUM(role_t.salary) AS Annual_Budget_HR FROM role_t JOIN department ON dept_id = id_dep group by name_dep;", 
   function(err, res) {
     if (err) throw err
     console.log (`

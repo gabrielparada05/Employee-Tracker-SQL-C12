@@ -13,7 +13,8 @@ const con = mysql.createConnection({
   database: 'humanResources_db' 
 });
 
-
+// https://www.javascripttutorial.net/array/javascript-remove-duplicates-from-array/
+// https://www.geeksforgeeks.org/how-to-remove-duplicate-elements-from-javascript-array/
  
 
 function principalLogo() {
@@ -227,7 +228,7 @@ function viewManagers() {
 function viewAnnualBudget() {
   console.clear()
   principalLogo()
-  con.query("SELECT SUM(role_t.salary) AS Annual_Budget_HR, name_dep AS Department FROM role_t JOIN department ON dept_id = id_dep group by name_dep;", 
+  con.query("SELECT SUM(role_t.salary) AS Annual_Budget_HR, FROM role_t JOIN department ON dept_id = id_dep group by name_dep;", 
   function(err, res) {
     if (err) throw err
     console.log (`
@@ -289,7 +290,7 @@ function addRole() {
   console.clear()
   principalLogo()
 
-  con.query("SELECT DISTINCT id_role as ID_Role, title as Title, salary AS Annual_Salary, dept_id AS ID_Dep, name_dep AS Department FROM role_t AS r JOIN department AS d ON dept_id = id_dep ORDER BY id_role ASC;;", 
+  con.query("SELECT DISTINCT id_role as ID_Role, title as Title, salary AS Annual_Salary, d.id_dep AS ID_Dep, name_dep AS Department FROM role_t AS r RIGHT JOIN department AS d ON dept_id = id_dep ORDER BY id_role DESC;", 
 function(err, res) {
   if (err) throw err
   const nameDep = [...new Set(res.map(x => x.ID_Dep))];
@@ -348,12 +349,24 @@ function(err, res) {
 function addEmployee() {
   console.clear()
   principalLogo()
-  con.query("SELECT id_emp AS ID_Emp, e.first_name AS First_Name_Emp, e.last_name AS Last_Name_Emp, manager.id_man AS Manager_ID, id_role AS ID_Role, title AS Title,  salary AS Annual_Salary, dept_id as Dept_ID FROM employee AS e RIGHT JOIN role_t AS r RIGHT JOIN manager ON role_id = id_role ON man_id = id_man order by id_emp DESC;", 
+  con.query("SELECT id_emp AS ID_Emp, e.first_name AS First_Name_Emp, e.last_name AS Last_Name_Emp, manager.id_man AS Manager_ID, id_role AS ID_Role, title AS Title,  salary AS Annual_Salary, dept_id as Dept_ID FROM employee AS e RIGHT JOIN role_t AS r LEFT JOIN manager ON role_id = id_role ON man_id = id_man order by id_emp DESC;", 
 function(err, res) {
   if (err) throw err
   const nameRole = [...new Set(res.map(x => x.ID_Role))];
-  const nameManager = [...new Set(res.map(x => x.Manager_ID))];
-  
+  const nameManager = [];
+  for (let i = 0; i < res.length; i++) {
+    const id_emp = res[i].Manager_ID;
+    if (id_emp !== null) {
+      nameManager.push(id_emp);
+    } 
+  }
+
+    function removeDuplicates(nameManager) {
+    return nameManager.filter((item, index) => nameManager.indexOf(item) === index);
+  }
+
+
+
 
   console.log(`
 
@@ -397,7 +410,7 @@ function(err, res) {
     type: 'list',
     message: 'What is the employee`s manager ID? If you do not know the manager ID, press ENTER',
     name: 'manager',
-    choices: nameManager,
+    choices: removeDuplicates(nameManager),
   },
 ]).then(function(answer) {
   con.query(`INSERT INTO employee (first_name, last_name, role_id, man_id) VALUES ("${answer.newFirstName}","${answer.newLastName}",${answer.role}, ${answer.manager});`, 
@@ -414,12 +427,35 @@ function(err, res) {
 function updateEmployeeRole() {
   console.clear()
   principalLogo()
-  con.query("SELECT id_emp AS ID_Emp, e.first_name AS First_Name, e.last_name AS Last_Name, role_id AS Role_ID, title as Title, salary as Annual_Salary, dept_id AS Dep_id FROM employee AS e JOIN role_t AS r ON e.role_id = r.id_role; ", 
-function(err, res1) {
+  con.query("SELECT id_emp AS ID_Emp, e.first_name AS First_Name, e.last_name AS Last_Name, role_id AS Role_ID, title as Title, salary as Annual_Salary, dept_id AS Dep_id FROM employee AS e RIGHT JOIN role_t AS r ON e.role_id = r.id_role; ", 
+function(err, res) {
   if (err) throw err
-  const roles = [...new Set(res1.map(x => x.Role_ID))];
-  const employees = [...new Set(res1.map(x => x.ID_Emp))]
-  
+
+
+  const roles = [];
+  for (let i = 0; i < res.length; i++) {
+    const roleId = res[i].Role_ID;
+    if (roleId !== null) {
+      roles.push(roleId);
+    }
+  }
+
+  function removeDuplicatesRoles(roles) {
+    return roles.filter((item, index) => roles.indexOf(item) === index);
+  }
+
+
+
+
+  const employees = [];
+  for (let i = 0; i < res.length; i++) {
+    const id_emp = res[i].ID_Emp;
+    if (id_emp !== null) {
+      employees.push(id_emp);
+    }
+  }
+
+
   console.log(`
 
                               ╦ ╦╔═╗╔╦╗╔═╗╔╦╗╔═╗  ╦═╗╔═╗╦  ╔═╗
@@ -427,7 +463,7 @@ function(err, res1) {
                               ╚═╝╩  ═╩╝╩ ╩ ╩ ╚═╝  ╩╚═╚═╝╩═╝╚═╝
                                           
                                         `)
-  table(res1)
+  table(res)
  
   inquirer.prompt([
     {
@@ -440,7 +476,7 @@ function(err, res1) {
     type: 'list',
     message: 'What is the new employee`s role?',
     name: 'roleId',
-    choices: roles,
+    choices: removeDuplicatesRoles(roles),
   },
 ]).then(function(answer) {
   con.query(`UPDATE employee SET role_id = ${answer.roleId} where id_emp = ${answer.employeeID}; `, 

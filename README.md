@@ -27,7 +27,9 @@ Users can get started with this app by running the index.js file in their termin
 
 ## Screenshot path
 Screenshots are available ![home_page](./assets/home_page.png)
-![home_page](./assets/departments.png)
+![home_page](./assets/departments.png). 
+
+Also, there is a Walkthrough Video at https://drive.google.com/file/d/1zcXgHatjxpfeXWzDtyChDD2Fweaqj8uf/view or scan ![qr_code_video](./assets/qrcode.png)
 
 ## Usage
 Users can use this app to manage employee data, including viewing all employees, departments, and roles, adding new departments, roles, and employees, updating employee roles and managers, and deleting departments, roles, and employees. The app uses inquirer prompts to guide the user through each action and displays the data in a table format for easy viewing. The user can select the desired action from a list of options and follow the prompts to complete the action.
@@ -60,5 +62,5 @@ Users can collaborate with this project at https://github.com/gabrielparada05/Em
 
 
 ## Credits
-This project was developed by Gabriel Parada. The project was completed with the assistance of those amazing resources https://www.javascripttutorial.net/array/javascript-remove-duplicates-from-array/, https://www.geeksforgeeks.org/how-to-remove-duplicate-elements-from-javascript-array/. The ASCII were generated on http://patorjk.com/software/taag/#p=display&f=ANSI%20Shadow&t=.
+This project was developed by Gabriel Parada. The project was completed with the assistance of those amazing resources https://www.javascripttutorial.net/array/javascript-remove-duplicates-from-array/, https://www.geeksforgeeks.org/how-to-remove-duplicate-elements-from-javascript-array/, https://stackoverflow.com/a/67859384. The ASCII were generated on http://patorjk.com/software/taag/#p=display&f=ANSI%20Shadow&t=. I would like to extend my sincere thanks to Staff UofTor, especially Dane Shrewsbury, for their exceptional help throughout my project. I am truly grateful for their expertise and dedication.
 

@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const { Console } = require('console');
+const util = require('util');
 const { Transform } = require('stream');
 const { map } = require('rxjs');
 require('dotenv').config();
@@ -11,15 +12,18 @@ const con = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: process.env.password,
-  database: 'humanResources_db' 
+  database: 'humanResources_db'
 });
+
+con.query = util.promisify(con.query);
+
 
 // https://www.javascripttutorial.net/array/javascript-remove-duplicates-from-array/
 // https://www.geeksforgeeks.org/how-to-remove-duplicate-elements-from-javascript-array/
- 
+
 
 function principalLogo() {
-  console.log (`
+  console.log(`
   ███████ ███    ███ ██████  ██       ██████  ██    ██ ███████ ███████ 
   ██      ████  ████ ██   ██ ██      ██    ██  ██  ██  ██      ██      
   █████   ██ ████ ██ ██████  ██      ██    ██   ████   █████   █████   
@@ -58,96 +62,90 @@ function table(input) {
 
 
 
-    // Initial prompt 
-  initialPrompt()
+// Initial prompt 
+initialPrompt()
 
-    function initialPrompt() {
+function initialPrompt() {
 
-      
-      inquirer.prompt([
-      {
+
+  inquirer.prompt([
+    {
       type: "list",
       message: "What would you like to do?",
       name: "choice",
       choices: [
-                "View All Employees", 
-                "View All Departments",
-                "View All Roles",
-                "View employees by manager",
-                "View employees by department",
-                "View annual budget by department",
-                "Add a Department",
-                "Add a Role",
-                "Add an Employee",
-                "Update an Employee's Role", 
-                "Update employee`s Manager", 
-                "Delete departments, roles, and employees"
-              ],
-    validate: function (answer) {
-                if (answer.length === 0) {
-                  return console.log("Select one!");
-                }
-                return true;
-        
-              }
-        
+        "View All Employees",
+        "View All Departments",
+        "View All Roles",
+        "View employees by manager",
+        "View employees by department",
+        "View annual budget by department",
+        "Add a Department",
+        "Add a Role",
+        "Add an Employee",
+        "Update employee's Role",
+        "Update employee's Manager",
+        "Delete departments, roles, and employees"
+      ],
+      pageSize: 12,
+      validate: function (answer) {
+        if (answer.length === 0) {
+          return console.log("Select one!");
+        }
+        return true;
+
       }
-  ]).then(function(answer) {
+
+    }
+  ]).then(function (answer) {
 
     const userChoice = answer.choice;
 
-    if (userChoice === "View All Employees") {
-      viewEmployees();
-    } else if (userChoice === "View All Departments") {
-      viewDepartments();
-    } else if (userChoice === "View All Roles") {
-      viewRoles();
-    } else if (userChoice === "View employees by manager") {
-      viewManagers();
-    } else if (userChoice === "View employees by department") {
-      viewEmployDepart();
-    } else if (userChoice === "View annual budget by department") {
-      viewAnnualBudget();
-    } else if (userChoice === "Add a Department") {
-      addDepartment();
-    } else if (userChoice === "Add a Role") {
-      addRole();
-    } else if (userChoice === "Add an Employee") {
-      addEmployee();
-    } else if (userChoice === "Update an Employee's Role") {
-      updateEmployeeRole();
-    } else if (userChoice === "Update employee`s Manager") {
-      updateEmployeeManager();
-    } else if (userChoice === "Delete departments, roles, and employees") {
-      deleteElements();
-    } else {
-      console.log("Invalid choice. Please try again.")
+    switch (userChoice) {
+      case "View All Employees":
+        viewEmployees();
+        break;
+      case "View All Departments":
+        viewDepartments();
+        break;
+      case "View All Roles":
+        viewRoles();
+        break;
+      case "View employees by manager":
+        viewManagers();
+        break;
+      case "View employees by department":
+        viewEmployDepart();
+        break;
+      case "View annual budget by department":
+        viewAnnualBudget();
+        break;
+      case "Add a Department":
+        addDepartment();
+        break;
+      case "Add a Role":
+        addRole();
+        break;
+      case "Add an Employee":
+        addEmployee();
+        break;
+      case "Update employee's Role":
+        updateEmployeeRole();
+        break;
+      case "Update employee's Manager":
+        updateEmployeeManager();
+        break;
+      case "Delete departments, roles, and employees":
+        deleteElements();
+        break;
+      default:
+        console.log("Invalid choice. Please try again.");
     }
-    
 
 
+  })
 
-    // const lookupChoice = {
-    //   "View All Employees": () => viewEmployees(),
-    //   "View All Departments": () => viewDepartments(),
-    //   "View All Roles": () => viewRoles(),
-    //   "View employees by manager": () => viewManagers(),
-    //   "View employees by department": () => viewEmployDepart(),
-    //   "View annual budget by department": () => viewAnnualBudget(),
-    //   "Add a Department": () => addDepartment(),
-    //   "Add a Role": () => addRole(),
-    //   "Add an Employee": () => addEmployee(),
-    //   "Update an Employee's Role": () => updateEmployeeRole(),
-    //   "Update employee`s Manager": () => updateEmployeeManager(),
-    //   "Delete departments, roles, and employees" : () => deleteElements()
-    // }
-  
-    // const fn = lookupChoice[answer.choice]
-    // fn()
-
-      })
-  
-  }
+}
 
 /// View employees
 
@@ -159,19 +157,14 @@ function viewEmployees() {
               ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗
               ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝
   `)
-  con.query('SELECT id_emp AS ID_Emp, first_name AS First_Name, last_name AS Last_Name, role_id AS Role, man_id AS Manager_ID from employee;', 
-  function(err, res) {
-    if (err) throw err
-    console.clear()
-    principalLogo()
-    console.log(`
-              ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗
-              ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗
-              ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝
-  `)
-    table(res)
-    initialPrompt()
-})
+  con.query("SELECT e.id_emp AS ID_E, e.first_name AS F_Name_E, e.last_name AS L_Name_E, COALESCE(title, 'N/A') AS Title, COALESCE(FORMAT(salary,2), 'N/A') AS Salary, COALESCE(id_dep, 'N/A') AS ID_Dep, COALESCE(name_dep, 'N/A') AS Department, COALESCE(m.first_name, 'N/A') AS F_Name_Man, COALESCE(m.last_name, 'N/A') AS L_Name_Man FROM employee AS e LEFT JOIN manager as m ON man_id = id_man LEFT JOIN role_t AS r ON e.role_id = r.id_role LEFT JOIN department AS d ON r.dept_id = id_dep   ORDER BY id_emp ASC;",
+    function (err, res) {
+      if (err) throw err
+
+
+      table(res)
+      initialPrompt()
+    })
 }
 
 /// View departments
@@ -179,24 +172,20 @@ function viewEmployees() {
 function viewDepartments() {
   console.clear()
   principalLogo()
+
   console.log(`
 ╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗╔═╗
  ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ ╚═╗
 ═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ ╚═╝
   `)
-  con.query("SELECT id_dep AS 'ID Department', name_dep AS 'Department' from department;", 
-  function(err, res) {
-    if (err) throw err
-    console.clear()
-    principalLogo()
-     console.log(`
-╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗╔═╗
- ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ ╚═╗
-═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ ╚═╝
-  `)
-    table(res)
-    initialPrompt()
-})
+  con.query("SELECT id_dep AS 'ID Department', name_dep AS 'Department' from department ORDER BY id_dep ASC;",
+    function (err, res) {
+      if (err) throw err
+
+
+      table(res)
+      initialPrompt()
+    })
 
 }
 
@@ -206,24 +195,21 @@ function viewDepartments() {
 function viewRoles() {
   console.clear()
   principalLogo()
-  console.log (`
+  console.log(`
                   ╦═╗╔═╗╦  ╔═╗╔═╗
                   ╠╦╝║ ║║  ║╣ ╚═╗
                   ╩╚═╚═╝╩═╝╚═╝╚═╝
 `)
-  con.query("SELECT id_role AS 'ID Role', title AS 'Title', salary AS 'Annual Salary', dept_id AS 'Department ID' FROM role_t;", 
-  function(err, res) {
-    if (err) throw err
-    console.clear()
-    principalLogo()
-    console.log (`
-                  ╦═╗╔═╗╦  ╔═╗╔═╗
-                  ╠╦╝║ ║║  ║╣ ╚═╗
-                  ╩╚═╚═╝╩═╝╚═╝╚═╝
-`)
-    table(res)
-    initialPrompt()
-})
+  con.query("SELECT id_role AS ID_Role, title AS Title, FORMAT(salary,2) AS Annual_Salary, coalesce(name_dep, 'N/A') AS Department FROM role_t left join department on dept_id = id_dep;",
+    function (err, res) {
+      if (err) throw err
+
+
+
+      table(res)
+      initialPrompt()
+
+    })
 }
 
 
@@ -232,24 +218,19 @@ function viewRoles() {
 function viewEmployDepart() {
   console.clear()
   principalLogo()
-  con.query("SELECT e.id_emp AS 'ID Emp', e.first_name AS 'First Name - Emp', e.last_name AS 'Last Name - Emp', r.dept_id AS 'ID Dep' , name_dep AS 'Department' FROM employee AS e JOIN role_t AS r ON e.role_id = r.id_role JOIN department AS d ON r.dept_id = id_dep;", 
-  function(err, res) {
-    if (err) throw err
-    console.log (`
+  con.query("SELECT e.id_emp AS 'ID Emp', e.first_name AS 'First Name - Emp', e.last_name AS 'Last Name - Emp', r.dept_id AS 'ID Dep' , name_dep AS 'Department' FROM employee AS e JOIN role_t AS r ON e.role_id = r.id_role JOIN department AS d ON r.dept_id = id_dep ORDER BY id_emp ASC;",
+    function (err, res) {
+      if (err) throw err
+      console.log(`
       ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗  ╔╗ ╦ ╦  ╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗
       ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗  ╠╩╗╚╦╝   ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ 
       ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝  ╚═╝ ╩   ═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ 
 `)
-    console.clear()
-    principalLogo()
-    console.log (`
-      ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗  ╔╗ ╦ ╦  ╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗
-      ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗  ╠╩╗╚╦╝   ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ 
-      ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝  ╚═╝ ╩   ═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ 
-`)
-    table(res)
-    initialPrompt()
-})
+
+
+      table(res)
+      initialPrompt()
+    })
 }
 
 
@@ -258,24 +239,20 @@ function viewEmployDepart() {
 function viewManagers() {
   console.clear()
   principalLogo()
-  con.query("SELECT em.id_emp as 'Id Emp', em.first_name as 'First Name - Emp', em.last_name AS 'Last Name - Emp', man_id AS 'ID Manager', man.first_name AS 'First Name - Manager', man.last_name AS 'Last Name - Manager' FROM employee as em JOIN manager as man ON em.man_id = man.id_man order by id_emp ASC;", 
-  function(err, res) {
-    if (err) throw err
-    console.log (`
+  con.query("SELECT em.id_emp as Id_E, em.first_name as F_Name_E, em.last_name AS L_Name_E, COALESCE(man_id, 'N/A') as Man_ID, COALESCE(man.first_name, 'N/A') AS F_Name_Man, COALESCE(man.last_name, 'N/A') AS L_Name_Man FROM employee as em left JOIN manager as man ON em.man_id = man.id_man order by id_emp ASC;",
+    function (err, res) {
+      if (err) throw err
+      console.log(`
     ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗  ╔═╗╔╗╔╔╦╗  ╔╦╗╔═╗╔╗╔╔═╗╔═╗╔═╗╦═╗╔═╗
     ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗  ╠═╣║║║ ║║  ║║║╠═╣║║║╠═╣║ ╦║╣ ╠╦╝╚═╗
     ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝  ╩ ╩╝╚╝═╩╝  ╩ ╩╩ ╩╝╚╝╩ ╩╚═╝╚═╝╩╚═╚═╝
 `)
-    console.clear()
-    principalLogo()
-    console.log (`
-    ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗  ╔═╗╔╗╔╔╦╗  ╔╦╗╔═╗╔╗╔╔═╗╔═╗╔═╗╦═╗╔═╗
-    ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗  ╠═╣║║║ ║║  ║║║╠═╣║║║╠═╣║ ╦║╣ ╠╦╝╚═╗
-    ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝  ╩ ╩╝╚╝═╩╝  ╩ ╩╩ ╩╝╚╝╩ ╩╚═╝╚═╝╩╚═╚═╝
-`)
-    table(res)
-    initialPrompt()
-})
+
+
+
+      table(res)
+      initialPrompt()
+    })
 }
 
 
@@ -283,240 +260,214 @@ function viewManagers() {
 function viewAnnualBudget() {
   console.clear()
   principalLogo()
-  con.query("SELECT name_dep AS Department, SUM(role_t.salary) AS Annual_Budget_HR FROM role_t JOIN department ON dept_id = id_dep group by name_dep;", 
-  function(err, res) {
-    if (err) throw err
-    console.log (`
+  con.query("SELECT department.name_dep AS Department, FORMAT(SUM(role_t.salary), 2) AS Salary_Budge FROM employee RIGHT JOIN role_t ON employee.role_id = role_t.id_role JOIN department ON role_t.dept_id = department.id_dep WHERE id_emp IS NOT NULL GROUP BY department.name_dep WITH ROLLUP;",
+    function (err, res) {
+      if (err) throw err
+      console.log(`
     ╔═╗╔╗╔╔╗╔╦ ╦╔═╗╦    ╔╗ ╦ ╦╔╦╗╔═╗╔═╗╔╦╗  ╔╗ ╦ ╦  ╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗
     ╠═╣║║║║║║║ ║╠═╣║    ╠╩╗║ ║ ║║║ ╦║╣  ║   ╠╩╗╚╦╝   ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ 
     ╩ ╩╝╚╝╝╚╝╚═╝╩ ╩╩═╝  ╚═╝╚═╝═╩╝╚═╝╚═╝ ╩   ╚═╝ ╩   ═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ 
 `)
-  console.clear()
-  principalLogo()
-  console.log (`
-    ╔═╗╔╗╔╔╗╔╦ ╦╔═╗╦    ╔╗ ╦ ╦╔╦╗╔═╗╔═╗╔╦╗  ╔╗ ╦ ╦  ╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗
-    ╠═╣║║║║║║║ ║╠═╣║    ╠╩╗║ ║ ║║║ ╦║╣  ║   ╠╩╗╚╦╝   ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ 
-    ╩ ╩╝╚╝╝╚╝╚═╝╩ ╩╩═╝  ╚═╝╚═╝═╩╝╚═╝╚═╝ ╩   ╚═╝ ╩   ═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ 
-    `)
-    table(res)
-    initialPrompt()
-})
+
+
+
+      table(res)
+      initialPrompt()
+    })
 }
 
 /// Add DEPARTMENT
 
 function addDepartment() {
   console.clear()
-  principalLogo()
+  con.query("SELECT id_dep AS 'ID_Dep', name_dep AS 'Department' FROM department ORDER BY id_dep ASC;",
+    function (err, res) {
+      if (err) throw err
 
-  con.query("SELECT id_dep AS 'ID_Dep', name_dep AS 'Department' FROM department ORDER BY id_dep ASC;", 
-function(err, res) {
-  if (err) throw err
- 
-  //calvin s
-  console.log(`
+      //calvin s
+      console.log(`
   ╔═╗╔╦╗╔╦╗  ╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗╔═╗
   ╠═╣ ║║ ║║   ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ ╚═╗
   ╩ ╩═╩╝═╩╝  ═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ ╚═╝
       `)
-  table(res)
+      table(res)
 
 
 
-  inquirer.prompt([
-  {
-    type: 'input',
-    message: 'What is the name of the new department?',
-    name: 'newDep',
-    validate: function (answer) {
-      if (answer.length === 0) {
-        return console.log("Write one!");
-      }
-      return true;
-    },
-  },
-]).then(function(answer) {
+      inquirer.prompt([
+        {
+          type: 'input',
+          message: 'What is the name of the new department?',
+          name: 'newDep',
+          validate: function (answer) {
+            if (answer.length === 0) {
+              return console.log("Write one!");
+            }
+            return true;
+          },
+          pageSize: 15,
+        },
+      ]).then(function (answer) {
 
-  con.query(`INSERT INTO department (name_dep) VALUES ("${answer.newDep}");`, 
-  function(err, res) {
-    if (err) throw err
-    viewDepartments()
- 
-}) })
-})}
+        con.query(`INSERT INTO department (name_dep) VALUES ("${answer.newDep}");`,
+          function (err, res) {
+            if (err) throw err
+            viewDepartments()
+
+          })
+      })
+    })
+}
 
 
 /// Add role
 
-function addRole() {
+async function addRole() {
   console.clear()
-  principalLogo()
 
-  con.query("SELECT DISTINCT id_role as ID_Role, title as Title, salary AS Annual_Salary, d.id_dep AS ID_Dep, name_dep AS Department FROM role_t AS r RIGHT JOIN department AS d ON dept_id = id_dep ORDER BY id_role DESC;", 
-function(err, res) {
-  if (err) throw err
-  const nameDep = [...new Set(res.map(x => x.ID_Dep))];
+
   console.log(`
-            ╔═╗╔╦╗╔╦╗  ╦═╗╔═╗╦  ╔═╗╔═╗
-            ╠═╣ ║║ ║║  ╠╦╝║ ║║  ║╣ ╚═╗
-            ╩ ╩═╩╝═╩╝  ╩╚═╚═╝╩═╝╚═╝╚═╝
-                          `)
-  table(res)
- 
+              ╔═╗╔╦╗╔╦╗  ╦═╗╔═╗╦  ╔═╗╔═╗
+              ╠═╣ ║║ ║║  ╠╦╝║ ║║  ║╣ ╚═╗
+              ╩ ╩═╩╝═╩╝  ╩╚═╚═╝╩═╝╚═╝╚═╝
+                            `)
+
+
+  const departments = await con.query("SELECT * FROM department;")
+  const departmentChoices = departments.map(({ id_dep, name_dep }) => ({
+    name: name_dep,
+    value: id_dep
+  }))
 
 
   inquirer.prompt([
-  {
-    type: 'input',
-    message: 'Indicate the new role',
-    name: 'newRole',
-    validate: function (answer) {
-      if (answer.length === 0) {
-        return console.log("Write one!");
-      }
-      return true;
+    {
+      type: 'input',
+      message: 'Indicate the new role',
+      name: 'newRole',
+      validate: function (answer) {
+        if (answer.length === 0) {
+          return console.log("Write one!");
+        }
+        return true;
+      },
     },
-  },
-  {
-    type: 'number',
-    message: 'Indicate the salary for the new role',
-    name: 'newSalary',
-    validate: function (answer) {
-      if (answer.length === 0) {
-        return console.log("Write one!");
-      }
-      return true;
+    {
+      type: 'number',
+      message: 'Indicate the salary for the new role',
+      name: 'newSalary',
+      validate: function (answer) {
+        if (answer.length === 0) {
+          return console.log("Write one!");
+        }
+        return true;
+      },
     },
-  },
-  {
-    type: 'list',
-    message: 'Select the ID department for new role',
-    name: 'deptRole',
-    choices: nameDep
-  },
-  
-]).then(function(answer) {
-  con.query(`INSERT INTO role_t (title, salary, dept_id) VALUES ("${answer.newRole}", ${answer.newSalary},${answer.deptRole});`, 
-  function(err, res) {
-    if (err) throw err
-    viewRoles()
-   
-}) })
-})}
+    {
+      type: 'list',
+      message: 'Select the ID department for new role',
+      name: 'dept_id',
+      choices: departmentChoices,
+      pageSize: 15,
+    },
+
+  ]).then(function (answer) {
+    con.query(`INSERT INTO role_t (title, salary, dept_id) VALUES ("${answer.newRole}", ${answer.newSalary},${answer.dept_id});`,
+      function (err, res) {
+        if (err) throw err
+        viewRoles()
+
+      })
+  })
+}
 
 
 
 /// Add employee
 
-function addEmployee() {
-  console.clear()
-  principalLogo()
-  con.query("SELECT id_emp AS ID_Emp, e.first_name AS First_Name_Emp, e.last_name AS Last_Name_Emp, manager.id_man AS Manager_ID, id_role AS ID_Role, title AS Title,  salary AS Annual_Salary, dept_id as Dept_ID FROM employee AS e RIGHT JOIN role_t AS r LEFT JOIN manager ON role_id = id_role ON man_id = id_man order by id_emp DESC;", 
-function(err, res) {
-  if (err) throw err
-  const nameRole = [...new Set(res.map(x => x.ID_Role))];
-  const nameManager = [];
-  for (let i = 0; i < res.length; i++) {
-    const id_emp = res[i].Manager_ID;
-    if (id_emp !== null) {
-      nameManager.push(id_emp);
-    } 
-  }
-
-    function removeDuplicates(nameManager) {
-    return nameManager.filter((item, index) => nameManager.indexOf(item) === index);
-  }
-
-
-
-
+async function addEmployee() {
+console.clear()
   console.log(`
 
-                      ╔═╗╔╦╗╔╦╗  ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗
-                      ╠═╣ ║║ ║║  ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗
-                      ╩ ╩═╩╝═╩╝  ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝
-                                          
-                                        `)
-  table(res)
- 
+  ╔═╗╔╦╗╔╦╗  ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗
+  ╠═╣ ║║ ║║  ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗
+  ╩ ╩═╩╝═╩╝  ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝
+                      
+                    `)
+
+  const roles = await con.query("SELECT * FROM role_t;")
+  const roleChoices = roles.map(({ id_role, title }) => ({
+    name: title,
+    value: id_role
+  }))
+  roles.unshift({ name: "Non", value: null });
+
+
+  const manager = await con.query("SELECT * FROM manager;")
+  const managerChoices = manager.map(({ id_man, first_name, last_name }) => ({
+    name: `${first_name} ${last_name}`,
+    value: id_man
+  }))
+  managerChoices.push({ name: "N/A", value: null })
+
+
+
+
+
+  // table(res)
+
   inquirer.prompt([
-  {
-    type: 'input',
-    message: 'What is the employee`s first name?',
-    name: 'newFirstName',
-    validate: function (answer) {
-      if (answer.length === 0) {
-        return console.log("Write one!");
-      }
-      return true;
+    {
+      type: 'input',
+      message: 'What is the employee`s first name?',
+      name: 'newFirstName',
+      validate: function (answer) {
+        if (answer.length === 0) {
+          return console.log("Write one!");
+        }
+        return true;
+      },
     },
-  },
-  {
-    type: 'input',
-    message: 'What is the employee`s last name?',
-    name: 'newLastName',
-    validate: function (answer) {
-      if (answer.length === 0) {
-        return console.log("Write one!");
-      }
-      return true;
+    {
+      type: 'input',
+      message: 'What is the employee`s last name?',
+      name: 'newLastName',
+      validate: function (answer) {
+        if (answer.length === 0) {
+          return console.log("Write one!");
+        }
+        return true;
+      },
     },
-  },
-  {
-    type: 'list',
-    message: 'What is the employee`s role?',
-    name: 'role',
-    choices: nameRole,
-  },
-  {
-    type: 'list',
-    message: 'What is the employee`s manager ID? If you do not know the manager ID, press ENTER',
-    name: 'manager',
-    choices: removeDuplicates(nameManager),
-  },
-]).then(function(answer) {
-  con.query(`INSERT INTO employee (first_name, last_name, role_id, man_id) VALUES ("${answer.newFirstName}","${answer.newLastName}",${answer.role}, ${answer.manager});`, 
-  function(err, res) {
-    if (err) throw err
-    viewEmployees()
-   
-}) })
-})}
+    {
+      type: 'list',
+      message: 'What is the employee`s role?',
+      name: 'role',
+      choices: roleChoices,
+      pageSize: 15,
+    },
+    {
+      type: 'list',
+      message: 'What is the employee`s manager ID?',
+      name: 'manager',
+      choices: managerChoices,
+      pageSize: 15,
+    },
+  ]).then(function (answer) {
+    con.query(`INSERT INTO employee (first_name, last_name, role_id, man_id) VALUES ("${answer.newFirstName}","${answer.newLastName}",${answer.role}, ${answer.manager});`,
+      function (err, res) {
+        if (err) throw err
+        viewEmployees()
+
+      })
+  })
+}
 
 
 /// Update employee
 
-function updateEmployeeRole() {
+async function updateEmployeeRole() {
   console.clear()
-  principalLogo()
-  con.query("SELECT id_emp AS ID_Emp, e.first_name AS First_Name, e.last_name AS Last_Name, role_id AS Role_ID, title as Title, salary as Annual_Salary, dept_id AS Dep_id FROM employee AS e RIGHT JOIN role_t AS r ON e.role_id = r.id_role; ", 
-function(err, res) {
-  if (err) throw err
-
-// SET id role
-  const roles = [];
-  for (let i = 0; i < res.length; i++) {
-    const roleId = res[i].Role_ID;
-    if (roleId !== null) {
-      roles.push(roleId);
-    }
-  }
-
-  function removeDuplicatesRoles(roles) {
-    return roles.filter((item, index) => roles.indexOf(item) === index);
-  }
-
-
-
-// SET id employee
-  const employees = [];
-  for (let i = 0; i < res.length; i++) {
-    const id_emp = res[i].ID_Emp;
-    if (id_emp !== null) {
-      employees.push(id_emp);
-    }
-  }
-
 
   console.log(`
 
@@ -525,79 +476,105 @@ function(err, res) {
                               ╚═╝╩  ═╩╝╩ ╩ ╩ ╚═╝  ╩╚═╚═╝╩═╝╚═╝
                                           
                                         `)
-  table(res)
- 
+
+  // SET id role
+  const roles = await con.query("SELECT * FROM role_t;")
+  const roleChoices = roles.map(({ id_role, title }) => ({
+    name: title,
+    value: id_role
+  }))
+  roles.unshift({ name: "Non", value: null });
+
+
+  // SET id employee
+  const employee = await con.query("SELECT * FROM employee;")
+  const employees = employee.map(({ id_emp, first_name, last_name }) => ({
+    name: `${first_name} ${last_name}`,
+    value: id_emp
+  }
+  ))
+
+
+
   inquirer.prompt([
     {
       type: 'list',
       message: 'Select an employee ID to update their role?',
       name: 'employeeID',
       choices: employees,
+      pageSize: 15,
     },
-  {
-    type: 'list',
-    message: 'What is the new employee`s role?',
-    name: 'roleId',
-    choices: removeDuplicatesRoles(roles),
-  },
-]).then(function(answer) {
-  con.query(`UPDATE employee SET role_id = ${answer.roleId} where id_emp = ${answer.employeeID}; `, 
-  function(err, res) {
-    if (err) throw err
-    viewEmployees();
-   
-}) })
-})}
+    {
+      type: 'list',
+      message: 'What is the new employee`s role?',
+      name: 'roleId',
+      choices: roleChoices,
+      pageSize: 15,
+    },
+  ]).then(function (answer) {
+    con.query(`UPDATE employee SET role_id = ${answer.roleId} where id_emp = ${answer.employeeID}; `,
+      function (err, res) {
+        if (err) throw err
+        viewEmployees();
+
+      })
+  })
+}
+
 
 
 /// Update employee`s manager
 
-function updateEmployeeManager() {
+async function updateEmployeeManager() {
   console.clear()
-  principalLogo()
-  con.query("SELECT id_emp AS ID_Emp, e.first_name AS First_Name_Emp, e.last_name AS Last_Name_Emp, id_man AS Man_ID, m.first_name AS First_Name_Man, m.last_name AS Last_Name_Man FROM employee AS e RIGHT JOIN manager AS m ON man_id = id_man ORDER BY id_emp DESC;", 
-function(err, res) {
-  
-  if (err) throw err
-  const manager = [...new Set(res.map(x => x.Man_ID))];
-  const employees = [];
-for (let i = 0; i < res.length; i++) {
-  const id_emp = res[i].ID_Emp;
-  if (id_emp !== null) {
-    employees.push(id_emp);
-  }
-}
-
 
   console.log(`
 
                   ╦ ╦╔═╗╔╦╗╔═╗╔╦╗╔═╗  ╔╦╗╔═╗╔╗╔╔═╗╔═╗╔═╗╦═╗
                   ║ ║╠═╝ ║║╠═╣ ║ ║╣   ║║║╠═╣║║║╠═╣║ ╦║╣ ╠╦╝
                   ╚═╝╩  ═╩╝╩ ╩ ╩ ╚═╝  ╩ ╩╩ ╩╝╚╝╩ ╩╚═╝╚═╝╩╚═
-                                          
-                                        `)
-  table(res)
- 
+                          
+                        `)
+
+
+  const employee = await con.query("SELECT * FROM employee;")
+  const employees = employee.map(({ id_emp, first_name, last_name }) => ({
+    name: `${first_name} ${last_name}`,
+    value: id_emp
+  }
+  ))
+  const manager = await con.query("SELECT * FROM manager;")
+  const managerChoices = manager.map(({ id_man, first_name, last_name }) => ({
+    name: `${first_name} ${last_name}`,
+    value: id_man
+  }))
+
+
+
+
   inquirer.prompt([
     {
       type: 'list',
       message: 'Select an employee ID to update their manager?',
       name: 'employeeID',
       choices: employees,
+      pageSize: 15,
     },
-  {
-    type: 'list',
-    message: 'What is the new employee`s manager?',
-    name: 'managerId',
-    choices: manager,
-  },
-]).then(function(answer) {
-  con.query(`UPDATE employee SET man_id = ${answer.managerId} where id_emp = ${answer.employeeID}; `, 
-  function(err, res) {
-    if (err) throw err
-    viewManagers();
-}) })
-})}
+    {
+      type: 'list',
+      message: 'What is the new employee`s manager?',
+      name: 'managerId',
+      choices: managerChoices,
+      pageSize: 15,
+    },
+  ]).then(function (answer) {
+    con.query(`UPDATE employee SET man_id = ${answer.managerId} where id_emp = ${answer.employeeID}; `,
+      function (err, res) {
+        if (err) throw err
+        viewManagers();
+      })
+  })
+}
 
 
 
@@ -606,141 +583,153 @@ for (let i = 0; i < res.length; i++) {
 
 function deleteElements() {
   console.clear()
-  principalLogo()
+
 
   inquirer.prompt([
     {
-    type: "list",
-    message: "What would you like to do?",
-    name: "choice",
-    choices: [
-              "Delete a Department", 
-              "Delete a role",
-              "Delete an employee",
-            ],
-  validate: function (answer) {
-              if (answer.length === 0) {
-                return console.log("Select one!");
-              }
-              return true;
-      
-            }
-      
+      type: "list",
+      message: "What would you like to do?",
+      name: "choice",
+      choices: [
+        "Delete a Department",
+        "Delete a role",
+        "Delete an employee",
+      ],
+      validate: function (answer) {
+        if (answer.length === 0) {
+          return console.log("Select one!");
+        }
+        return true;
+
+      },
+      pageSize: 15,
     }
-]).then(function(answer) {
+  ]).then(function (answer) {
     if (answer.choice === "Delete a Department") {
       deleteDepartment()
     } else if (answer.choice === "Delete a role") {
       deleteRole()
     } else if (answer.choice === "Delete an employee") {
       deleteEmployee()
-  
-  }
-})
+
+    }
+  })
 }
 
 
 /// delete department
-function deleteDepartment() {
+async function deleteDepartment() {
   console.clear()
-  principalLogo()
+
   console.log(`
  ╔╦╗╔═╗╦  ╔═╗╔╦╗╔═╗  ╔╦╗╔═╗╔═╗╔═╗╦═╗╔╦╗╔╦╗╔═╗╔╗╔╔╦╗╔═╗
   ║║║╣ ║  ║╣  ║ ║╣    ║║║╣ ╠═╝╠═╣╠╦╝ ║ ║║║║╣ ║║║ ║ ╚═╗
  ═╩╝╚═╝╩═╝╚═╝ ╩ ╚═╝  ═╩╝╚═╝╩  ╩ ╩╩╚═ ╩ ╩ ╩╚═╝╝╚╝ ╩ ╚═╝
     `)
-    con.query("SELECT id_dep AS 'ID_Department', name_dep AS 'Department' from department;", 
-    function(err, res) {
-      if (err) throw err
-      table(res)
-      const nameDep = [...new Set(res.map(x => x.ID_Department))]
 
-  inquirer.prompt([
-    {
-      type: 'list',
-      message: 'Which department do you want to delete?',
-      name: 'deleteDep',
-      choices: nameDep,
-    },
-  ]) .then(function(answer) {
-      con.query(`DELETE FROM department WHERE id_dep = ${answer.deleteDep};`, 
-      function(err, res) {
-        if (err) throw err
-        viewDepartments()
-    }) })
+      const department = await con.query("SELECT * FROM department;")
+      const depChoices = department.map(({ id_dep, name_dep }) => ({
+        name: name_dep,
+        value: id_dep
+      }))
+      
 
-  })
+      inquirer.prompt([
+        {
+          type: 'list',
+          message: 'Which department do you want to delete?',
+          name: 'deleteDep',
+          choices: depChoices,
+          pageSize: 15,
+        },
+      ]).then(function (answer) {
+        con.query(`DELETE FROM department WHERE id_dep = ${answer.deleteDep};`,
+          function (err, res) {
+            if (err) throw err
+            viewDepartments()
+          })
+      })
 
-}
+    }
 
 
 /// delete ROLE
-function deleteRole() {
+async function deleteRole() {
   console.clear()
-  principalLogo()
+
   console.log(`
       ╔╦╗╔═╗╦  ╔═╗╔╦╗╔═╗  ╦═╗╔═╗╦  ╔═╗╔═╗
        ║║║╣ ║  ║╣  ║ ║╣   ╠╦╝║ ║║  ║╣ ╚═╗
       ═╩╝╚═╝╩═╝╚═╝ ╩ ╚═╝  ╩╚═╚═╝╩═╝╚═╝╚═╝
     `)
-    con.query("SELECT id_role AS ID_Role, title AS Title, salary AS Annual_Salary, dept_id AS Dept_ID FROM role_t;", 
-    function(err, res) {
-      if (err) throw err
-      table(res)
-      const roleId = [...new Set(res.map(x => x.ID_Role))]
 
-  inquirer.prompt([
-    {
-      type: 'list',
-      message: 'Which role do you want to delete?',
-      name: 'deleteRole',
-      choices: roleId,
-    },
-  ]) .then(function(answer) {
-      con.query(`DELETE FROM role_t WHERE id_role = ${answer.deleteRole};`, 
-      function(err, res) {
-        if (err) throw err
-        viewRoles()
-    }) })
 
-  })
+      const roles = await con.query("SELECT * FROM role_t;")
+      const roleChoices = roles.map(({ id_role, title }) => ({
+        name: title,
+        value: id_role
+      }))
 
-}
+
+      roles.unshift({ name: "Non", value: null });
+      
+      
+      inquirer.prompt([
+        {
+          type: 'list',
+          message: 'Which role do you want to delete?',
+          name: 'deleteRole',
+          choices: roleChoices,
+          pageSize: 15,
+        },
+      ]).then(function (answer) {
+        con.query(`DELETE FROM role_t WHERE id_role = ${answer.deleteRole};`,
+          function (err, res) {
+            if (err) throw err
+            viewRoles()
+          })
+      })
+
+    }
 
 
 
 /// delete Employee
-function deleteEmployee() {
+async function deleteEmployee() {
   console.clear()
-  principalLogo()
+ 
   console.log(`
  ╔╦╗╔═╗╦  ╔═╗╔╦╗╔═╗  ╔═╗╔╦╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗
   ║║║╣ ║  ║╣  ║ ║╣   ║╣ ║║║╠═╝║  ║ ║╚╦╝║╣ ║╣ ╚═╗
  ═╩╝╚═╝╩═╝╚═╝ ╩ ╚═╝  ╚═╝╩ ╩╩  ╩═╝╚═╝ ╩ ╚═╝╚═╝╚═╝
     `)
-    con.query('SELECT id_emp AS ID_Emp, first_name AS First_Name, last_name AS Last_Name, role_id AS Role, man_id AS Manager_ID from employee;', 
-    function(err, res) {
-      if (err) throw err
-      table(res)
-      const employeeID = [...new Set(res.map(x => x.ID_Emp))]
+ 
 
-  inquirer.prompt([
-    {
-      type: 'list',
-      message: 'Which employee do you want to delete?',
-      name: 'deleteEmp',
-      choices: employeeID,
-    },
-  ]) .then(function(answer) {
-      con.query(`DELETE FROM employee WHERE id_emp = ${answer.deleteEmp};`, 
-      function(err, res) {
-        if (err) throw err
-        viewEmployees()
-    }) })
 
-  })
+  const employee = await con.query("SELECT * FROM employee;")
+  const employees = employee.map(({ id_emp, first_name, last_name }) => ({
+    name: `${first_name} ${last_name}`,
+    value: id_emp
+  }
+  ))
 
-}
+      inquirer.prompt([
+        {
+          type: 'list',
+          message: 'Which employee do you want to delete?',
+          name: 'deleteEmp',
+          choices: employees,
+          pageSize: 15,
+        },
+      ]).then(function (answer) {
+        con.query(`DELETE FROM employee WHERE id_emp = ${answer.deleteEmp};`,
+          function (err, res) {
+            if (err) throw err
+            viewEmployees()
+          })
+      })
+
+    }
 
 
 
